@@ -1,5 +1,7 @@
 .pio
 .vscode/*
+compile_commands.json
+.cache/
 build/
 venv/
 cache/
