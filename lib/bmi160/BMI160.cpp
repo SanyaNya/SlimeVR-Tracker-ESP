@@ -2169,12 +2169,13 @@ void BMI160::setIntEnabled(bool enabled) {
  * @see BMI160_RA_GYRO_X_L
  */
 bool BMI160::getMotion6(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz) {
-    std::array<uint8_t, 12> pbuffer;
-    std::copy(std::cbegin(buffer), std::cend(buffer), std::begin(pbuffer));
+    constexpr uint8_t acc_gyr_mask = (1 << BMI160_STATUS_DRDY_GYR) | (1 << BMI160_STATUS_DRDY_ACC);
+    uint8_t rd;
+    I2CdevMod::readByte(devAddr, BMI160_RA_STATUS, &rd);
+    if(!(rd & acc_gyr_mask)) return false;
+
     I2CdevMod::readBytes(devAddr, BMI160_RA_GYRO_X_L, 12, buffer);
-
-    if(std::equal(std::cbegin(buffer), std::cend(buffer), std::cbegin(pbuffer))) return false;
-
+    
     *gx = (((int16_t)buffer[1])  << 8) | buffer[0];
     *gy = (((int16_t)buffer[3])  << 8) | buffer[2];
     *gz = (((int16_t)buffer[5])  << 8) | buffer[4];
