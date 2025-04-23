@@ -90,6 +90,7 @@ public:
     bool hasNewDataToSend() {
         return newFusedRotation;
     };
+    void clearHasNewData() { newFusedRotation = false; }
 
 protected:
     uint8_t addr = 0;

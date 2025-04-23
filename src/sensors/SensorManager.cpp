@@ -128,6 +128,7 @@ namespace SlimeVR
             }
         }
 
+        bool decimation_send = false;
         void SensorManager::update()
         {
             #if SEND_AVG_TIME_TO_SEND
@@ -144,9 +145,14 @@ namespace SlimeVR
 
             bool shouldSend = true;
             for (auto &sensor : m_Sensors)
+            {
                 shouldSend &= sensor->hasNewDataToSend();
+                sensor->clearHasNewData();
+            }
 
-            if(shouldSend)
+            if(shouldSend) decimation_send = !decimation_send;
+
+            if(shouldSend && decimation_send)
             {
                 networkConnection.beginBundle();
 
