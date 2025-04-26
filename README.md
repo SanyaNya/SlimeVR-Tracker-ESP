@@ -34,6 +34,10 @@ You must set these vars in platformio.ini before build and upload:
   * DMY_SECOND_IMU_ROTATION
   * DMY_IMU_COUNT
 
+## Temperature calibration
+Add -DDOING_TCAL=1 flag to platformio.ini and flash tracker before temperature calibration to see temperature and enable tcal recording.
+Also recommend this site for checking your tcal: https://ilyasnow.github.io/TCAL-Checker/
+
 # SlimeVR Tracker firmware for ESP
 
 Firmware for ESP8266 / ESP32 microcontrollers and different IMU sensors to use them as a vive-like trackers in VR.

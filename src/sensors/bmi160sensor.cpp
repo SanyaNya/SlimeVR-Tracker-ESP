@@ -221,11 +221,19 @@ void BMI160Sensor::motionLoop() {
     int16_t gx, gy, gz;
     int16_t ax, ay, az;
     if(!imu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz)) return;
+    #if DOING_TCAL
+    getTemperature(&temperature);
+    #endif
     onAccelRawSample(BMI160_ODR_ACC_MICROS, ax, ay, az);
     onGyroRawSample(BMI160_ODR_GYR_MICROS, gx, gy, gz);
     setFusedRotation(sfusion.getQuaternionQuat());
     #if SEND_ACCELERATION
     setAcceleration(sfusion.getLinearAccVec());
+    #endif
+    #if DOING_TCAL
+    networkConnection.beginBundle();
+    networkConnection.sendTemperature(0, temperature);
+    networkConnection.endBundle();
     #endif
 }
 
@@ -234,7 +242,7 @@ void BMI160Sensor::onGyroRawSample(uint32_t dtMicros, int16_t x, int16_t y, int1
         gyrReads++;
     #endif
 
-    #if BMI160_USE_TEMPCAL
+    #if DOING_TCAL
         bool restDetected = sfusion.getRestDetected();
         gyroTempCalibrator->updateGyroTemperatureCalibration(temperature, restDetected, x, y, z);
     #endif

@@ -295,16 +295,10 @@ void Connection::sendSignalStrength(uint8_t signalStrength) {
 
 // PACKET_TEMPERATURE 20
 void Connection::sendTemperature(uint8_t sensorId, float temperature) {
-	MUST(m_Connected);
-
-	MUST(beginPacket());
-
-	MUST(sendPacketType(PACKET_TEMPERATURE));
-	MUST(sendPacketNumber());
-	MUST(sendByte(sensorId));
-	MUST(sendFloat(temperature));
-
-	MUST(endPacket());
+	m_raw_udp.write(PACKET_TEMPERATURE);
+	m_raw_udp.write(m_PacketNumber++);
+	m_raw_udp.write(sensorId);
+	m_raw_udp.write(temperature);
 }
 
 // PACKET_FEATURE_FLAGS 22

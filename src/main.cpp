@@ -109,4 +109,7 @@ void setup()
 void loop()
 {
     sensorManager.update();
+#if DOING_TCAL
+    SerialCommands::update();
+#endif
 }
