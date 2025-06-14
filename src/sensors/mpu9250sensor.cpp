@@ -161,7 +161,7 @@ void MPU9250Sensor::motionLoop() {
     imu.getMagnetometer(&temp[0], &temp[1], &temp[2]);
     parseMagData(temp);
 
-    sfusion.updateMag(Mxyz);
+    //sfusion.updateMag(Mxyz);
     #if SEND_ACCELERATION
     {
         int16_t atemp[3];
