@@ -215,17 +215,23 @@ void BMI160Sensor::motionSetup() {
     imu.setMagFIFOEnabled(false);
 
     working = true;
+
+    int16_t gx, gy, gz;
+    //int16_t ax, ay, az;
+    uint32_t dt_micros;
+    while(!imu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz, &dt_micros)){} //wait for prev_time init
 }
 
 void BMI160Sensor::motionLoop() {
     int16_t gx, gy, gz;
     int16_t ax, ay, az;
-    if(!imu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz)) return;
+    uint32_t dt_micros;
+    if(!imu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz, &dt_micros)) return;
     #if DOING_TCAL
     getTemperature(&temperature);
     #endif
-    onAccelRawSample(BMI160_ODR_ACC_MICROS, ax, ay, az);
-    onGyroRawSample(BMI160_ODR_GYR_MICROS, gx, gy, gz);
+    onAccelRawSample(dt_micros, ax, ay, az);
+    onGyroRawSample(dt_micros, gx, gy, gz);
     setFusedRotation(sfusion.getQuaternionQuat());
     #if SEND_ACCELERATION
     setAcceleration(sfusion.getLinearAccVec());

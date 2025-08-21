@@ -691,7 +691,7 @@ class BMI160 {
         bool getIntFIFOBufferFullStatus();
         bool getIntDataReadyStatus();
 
-        bool getMotion6(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz);
+        bool getMotion6(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz, uint32_t* dt_micros);
         void getAcceleration(int16_t* x, int16_t* y, int16_t* z);
         int16_t getAccelerationX();
         int16_t getAccelerationY();
@@ -760,7 +760,8 @@ class BMI160 {
 
         bool getErrReg(uint8_t* out);
     private:
-        uint8_t buffer[12];
+        uint32_t prev_time = 0;
+        uint8_t buffer[15];
         uint8_t devAddr;
 };
 
