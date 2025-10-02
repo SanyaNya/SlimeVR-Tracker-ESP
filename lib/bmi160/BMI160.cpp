@@ -2185,7 +2185,7 @@ bool BMI160::getMotion6(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int1
 
     uint32_t t = (((uint32_t)buffer[14]) << 16) | (((uint32_t)buffer[13]) << 8) | (((uint32_t)buffer[12]));
     uint32_t dt = (t >= prev_time) ? (t - prev_time) : (0xFFFFFF - prev_time + t);
-    *dt_micros = dt*39;
+    *dt_micros = lround(double(dt) * 39.0625);
 
     prev_time = t;
 
