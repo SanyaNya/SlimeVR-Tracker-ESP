@@ -230,8 +230,8 @@ void BMI160Sensor::motionLoop() {
     #if DOING_TCAL
     getTemperature(&temperature);
     #endif
-    onAccelRawSample(dt_micros, ax, ay, az);
     onGyroRawSample(dt_micros, gx, gy, gz);
+    onAccelRawSample(dt_micros, ax, ay, az);
     setFusedRotation(sfusion.getQuaternionQuat());
     #if SEND_ACCELERATION
     setAcceleration(sfusion.getLinearAccVec());
