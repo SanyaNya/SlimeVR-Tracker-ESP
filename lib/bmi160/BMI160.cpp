@@ -2168,13 +2168,13 @@ void BMI160::setIntEnabled(bool enabled) {
  * @see getRotation()
  * @see BMI160_RA_GYRO_X_L
  */
-bool BMI160::getMotion6(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz, uint32_t* dt_micros) {
+bool BMI160::getMotion6(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz) {
     constexpr uint8_t acc_gyr_mask = (1 << BMI160_STATUS_DRDY_GYR) | (1 << BMI160_STATUS_DRDY_ACC);
     uint8_t rd;
     I2CdevMod::readByte(devAddr, BMI160_RA_STATUS, &rd);
     if(!(rd & acc_gyr_mask)) return false;
 
-    I2CdevMod::readBytes(devAddr, BMI160_RA_GYRO_X_L, 15, buffer);
+    I2CdevMod::readBytes(devAddr, BMI160_RA_GYRO_X_L, 12, buffer);
     
     *gx = (((int16_t)buffer[1])  << 8) | buffer[0];
     *gy = (((int16_t)buffer[3])  << 8) | buffer[2];
@@ -2182,12 +2182,6 @@ bool BMI160::getMotion6(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int1
     *ax = (((int16_t)buffer[7])  << 8) | buffer[6];
     *ay = (((int16_t)buffer[9])  << 8) | buffer[8];
     *az = (((int16_t)buffer[11]) << 8) | buffer[10];
-
-    uint32_t t = (((uint32_t)buffer[14]) << 16) | (((uint32_t)buffer[13]) << 8) | (((uint32_t)buffer[12]));
-    uint32_t dt = (t >= prev_time) ? (t - prev_time) : (0xFFFFFF - prev_time + t);
-    *dt_micros = dt*39;
-
-    prev_time = t;
 
     return true;
 }
