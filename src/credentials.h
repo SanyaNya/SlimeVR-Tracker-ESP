@@ -1,36 +1,27 @@
 /*
-	SlimeVR Code is placed under the MIT license
-	Copyright (c) 2021 Eiren Rain
+	SlimeVR 代码按照 MIT 许可证发布
+	版权所有 (c) 2021 Eiren Rain
 
-	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
-	furnished to do so, subject to the following conditions:
+	特此免费授予任何获得本软件及其相关文档文件（“软件”）副本的人无限制地使用本软件的许可，
+	包括但不限于使用、复制、修改、合并、发布、分发、再授权和/或出售软件副本，
+	以及允许向其提供软件的人这样做，前提是符合以下条件：
 
-	The above copyright notice and this permission notice shall be included in
-	all copies or substantial portions of the Software.
+	上述版权声明和本许可声明应包含在软件的所有副本或实质性部分中。
 
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-	THE SOFTWARE.
+	本软件按“原样”提供，不提供任何形式的明示或暗示担保，包括但不限于适销性、
+	特定用途适用性和非侵权的担保。在任何情况下，作者或版权持有人均不对因软件或软件
+	的使用或其他交易而产生的任何索赔、损害或其他责任负责。
 */
 #ifndef SLIMEVR_CREDENTIALS_H_
 #define SLIMEVR_CREDENTIALS_H_
 
-// The OTA password is public, server should know it for OTA updates,
-// and devices don't have any authentication anyway.
-// We have password here to prevent random attacks on IOT things
-// that might try to hack all esp-based devices and upload malicious
-// firmware. We don't have any hardware buttons for the user to confirm
-// OTA update, so this is the best way we have.
-// OTA is allowed only for the first 60 seconds after device startup.
+// OTA 密码是公开的，服务器应该知道它以便进行 OTA 更新，
+// 设备本身也没有任何额外认证机制。
+// 这里使用密码是为了防止随机攻击那些试图入侵所有基于 ESP 的设备并上传恶意
+// 固件的物联网攻击者。我们没有硬件按钮让用户确认 OTA 更新，
+// 所以这是我们现有情况下最好的办法。
+// OTA 只允许在设备启动后的前 60 秒内进行。
 const char* otaPassword
-	= "SlimeVR-OTA";  // YOUR OTA PASSWORD HERE, LEAVE EMPTY TO DISABLE OTA UPDATES
+	= "SlimeVR-OTA";  // 在此填写你的 OTA 密码，留空可禁用 OTA 更新
 
 #endif  // SLIMEVR_CREDENTIALS_H_
