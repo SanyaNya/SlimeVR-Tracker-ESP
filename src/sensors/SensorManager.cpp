@@ -57,7 +57,7 @@ void SensorManager::postSetup() {
 	}
 }
 
-void SensorManager::update() {
+void SensorManager::update(void (*other_work)()) {
 	// Gather IMU data
 	bool allIMUGood = true;
 	for (auto& sensor : m_Sensors) {
@@ -75,6 +75,7 @@ void SensorManager::update() {
 	statusManager.setStatus(SlimeVR::Status::IMU_ERROR, !allIMUGood);
 
 	if (!networkConnection.isConnected()) {
+		other_work();
 		return;
 	}
 
@@ -119,6 +120,8 @@ void SensorManager::update() {
 #if PACKET_BUNDLING != PACKET_BUNDLING_DISABLED
 	networkConnection.endBundle();
 #endif
+
+	other_work();
 }
 
 }  // namespace SlimeVR::Sensors

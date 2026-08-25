@@ -56,7 +56,6 @@ unsigned long loopTime = 0;
 unsigned long lastStatePrint = 0;
 bool secondImuActive = false;
 BatteryMonitor battery;
-TPSCounter tpsCounter;
 
 void setup() {
 	Serial.begin(serialBaudRate);
@@ -149,48 +148,25 @@ void setup() {
 	sensorManager.postSetup();
 
 	loopTime = micros();
-	tpsCounter.reset();
 }
 
-void loop() {
-	tpsCounter.update();
-	globalTimer.tick();
+void other_work()
+{
+	delay(2);
 	SerialCommands::update();
 	OTA::otaUpdate();
 	networkManager.update();
-
-#if DEBUG_MEASURE_SENSOR_TIME_TAKEN
-	sensorMeasurer.before();
-#endif
-	sensorManager.update();
-#if DEBUG_MEASURE_SENSOR_TIME_TAKEN
-	sensorMeasurer.after();
-#endif
-
 	battery.Loop();
 	ledManager.update();
 	I2CSCAN::update();
-#ifdef TARGET_LOOPTIME_MICROS
-	long elapsed = (micros() - loopTime);
-	if (elapsed < TARGET_LOOPTIME_MICROS) {
-		long sleepus = TARGET_LOOPTIME_MICROS - elapsed - 100;  // µs to sleep
-		long sleepms = sleepus / 1000;  // ms to sleep
-		if (sleepms > 0)  // if >= 1 ms
-		{
-			delay(sleepms);  // sleep ms = save power
-			sleepus -= sleepms * 1000;
-		}
-		if (sleepus > 100) {
-			delayMicroseconds(sleepus);
-		}
-	}
-	loopTime = micros();
+}
+
+void loop() {
+#if DEBUG_MEASURE_SENSOR_TIME_TAKEN
+	sensorMeasurer.before();
 #endif
-#if defined(PRINT_STATE_EVERY_MS) && PRINT_STATE_EVERY_MS > 0
-	unsigned long now = millis();
-	if (lastStatePrint + PRINT_STATE_EVERY_MS < now) {
-		lastStatePrint = now;
-		SerialCommands::printState();
-	}
+	sensorManager.update(other_work);
+#if DEBUG_MEASURE_SENSOR_TIME_TAKEN
+	sensorMeasurer.after();
 #endif
 }
