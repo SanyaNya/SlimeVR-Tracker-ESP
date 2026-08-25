@@ -41,7 +41,7 @@ struct LSM6DSR : LSM6DSOutputHandler {
 	static constexpr auto Type = SensorTypeID::LSM6DSR;
 
 	static constexpr float GyrFreq = 208;
-	static constexpr float AccFreq = 104;
+	static constexpr float AccFreq = 208;
 	static constexpr float MagFreq = 120;
 	static constexpr float TempFreq = 52;
 
@@ -67,7 +67,7 @@ struct LSM6DSR : LSM6DSOutputHandler {
 		};
 		struct Ctrl1XL {
 			static constexpr uint8_t reg = 0x10;
-			static constexpr uint8_t value = (0b01001000);  // XL at 104 Hz, 4g FS
+			static constexpr uint8_t value = (0b01011000);  // XL at 208 Hz, 4g FS
 		};
 		struct Ctrl2GY {
 			static constexpr uint8_t reg = 0x11;
@@ -82,7 +82,7 @@ struct LSM6DSR : LSM6DSOutputHandler {
 		struct FifoCtrl3BDR {
 			static constexpr uint8_t reg = 0x09;
 			static constexpr uint8_t value
-				= 0b01010100;  // Gyroscope batched into FIFO at 208Hz, Accel at 104Hz
+				= 0b01010101;  // Gyroscope batched into FIFO at 208Hz, Accel at 208Hz
 		};
 		struct FifoCtrl4Mode {
 			static constexpr uint8_t reg = 0x0a;
