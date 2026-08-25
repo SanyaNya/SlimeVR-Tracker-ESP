@@ -229,48 +229,29 @@ public:
 			tempGradientCalculator.tick();
 		}
 
-		constexpr uint32_t targetPollIntervalMicros = 6000;
-		uint32_t elapsed = now - m_lastPollTime;
-		if (elapsed >= targetPollIntervalMicros) {
-			m_lastPollTime = now - (elapsed - targetPollIntervalMicros);
-		}
-
 		// send new fusion values when time is up
-		now = micros();
-		constexpr float maxSendRateHz = 100.0f;
-		constexpr uint32_t sendInterval = 1.0f / maxSendRateHz * 1e6f;
-		elapsed = now - m_lastRotationPacketSent;
-		if (elapsed >= sendInterval) {
-			auto overwhelmed = m_sensor.bulkRead({
-				[&](const auto sample[3], float AccTs) {
-					processAccelSample(sample, AccTs);
-				},
-				[&](const auto sample[3], float GyrTs) {
-					processGyroSample(sample, GyrTs);
-				},
-				[&](int16_t sample, float TempTs) {
-					processTempSample(sample, TempTs);
-				},
-			});
-			if (overwhelmed) {
-				calibrator.signalOverwhelmed();
-			}
-			if (!m_fusion.isUpdated()) {
-				checkSensorTimeout();
-				return;
-			}
-			hadData = true;
-			m_lastRotationUpdateMillis = millis();
-			m_fusion.clearUpdated();
+		auto overwhelmed = m_sensor.bulkRead({
+			[&](const auto sample[3], float AccTs) {
+				processAccelSample(sample, AccTs);
+			},
+			[&](const auto sample[3], float GyrTs) {
+				processGyroSample(sample, GyrTs);
+			},
+			[&](int16_t sample, float TempTs) {
+				processTempSample(sample, TempTs);
+			},
+		});
 
-			m_lastRotationPacketSent = now - (elapsed - sendInterval);
+		if(overwhelmed) calibrator.signalOverwhelmed();
 
-			setFusedRotation(m_fusion.getQuaternionQuat());
-			setAcceleration(m_fusion.getLinearAccVec());
-			optimistic_yield(100);
-		}
+		if(!m_fusion.isUpdated()) return;
+		hadData = true;
+		m_fusion.clearUpdated();
 
-		if (calibrationDetector.update(m_fusion)) {
+		setFusedRotation(m_fusion.getQuaternionQuat());
+		setAcceleration(m_fusion.getLinearAccVec());
+
+		if(calibrationDetector.update(m_fusion)) {
 			markRestCalibrationComplete();
 		}
 	}
