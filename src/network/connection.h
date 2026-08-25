@@ -161,16 +161,11 @@ private:
 	template <typename Packet>
 	bool sendPacket(
 		SendPacketType type,
-		Packet packet,
-		std::optional<uint64_t> packetNumberOverride = std::nullopt
+		Packet packet
 	) {
 		MUST_TRANSFER_BOOL(beginPacket());
 		MUST_TRANSFER_BOOL(sendPacketType(type));
-		if (packetNumberOverride) {
-			MUST_TRANSFER_BOOL(sendLong(*packetNumberOverride));
-		} else {
-			MUST_TRANSFER_BOOL(sendPacketNumber());
-		}
+		MUST_TRANSFER_BOOL(sendPacketNumber());
 
 		MUST_TRANSFER_BOOL(
 			sendBytes(reinterpret_cast<uint8_t*>(&packet), sizeof(Packet))
@@ -182,16 +177,11 @@ private:
 	template <typename Callback>
 	bool sendPacketCallback(
 		SendPacketType type,
-		Callback bodyCallback,
-		std::optional<uint64_t> packetNumberOverride = std::nullopt
+		Callback bodyCallback
 	) {
 		MUST_TRANSFER_BOOL(beginPacket());
 		MUST_TRANSFER_BOOL(sendPacketType(type));
-		if (packetNumberOverride) {
-			MUST_TRANSFER_BOOL(sendLong(*packetNumberOverride));
-		} else {
-			MUST_TRANSFER_BOOL(sendPacketNumber());
-		}
+		MUST_TRANSFER_BOOL(sendPacketNumber());
 
 		MUST_TRANSFER_BOOL(bodyCallback());
 
@@ -218,7 +208,7 @@ private:
 
 	WiFiUDP m_UDP;
 	unsigned char m_Packet[128];  // buffer for incoming packets
-	uint64_t m_PacketNumber = 0;
+	uint32_t m_PacketNumber = 0;
 
 	int m_ServerPort = 6969;
 	IPAddress m_ServerHost = IPAddress(255, 255, 255, 255);

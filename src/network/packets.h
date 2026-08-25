@@ -149,13 +149,10 @@ struct SensorInfoPacket {
 };
 
 struct RotationDataPacket {
-	uint8_t sensorId{};
-	uint8_t dataType{};
 	BigEndian<float> x;
 	BigEndian<float> y;
 	BigEndian<float> z;
 	BigEndian<float> w;
-	uint8_t accuracyInfo{};
 };
 
 struct MagnetometerAccuracyPacket {
