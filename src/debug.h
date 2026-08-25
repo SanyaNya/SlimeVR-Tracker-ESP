@@ -37,7 +37,7 @@
 #define ENABLE_TAP \
 	false  // monitor accel for (triple) tap events and send them. Uses more cpu,
 		   // disable if problems. Server does nothing with value so disabled atm
-#define SEND_ACCELERATION true  // send linear acceleration to the server
+#define SEND_ACCELERATION false  // send linear acceleration to the server
 
 #define EXT_SERIAL_COMMANDS false  // Set to true to enable extra serial debug commands
 
@@ -66,7 +66,7 @@
 #endif
 
 // Packet bundling/aggregation
-#define PACKET_BUNDLING PACKET_BUNDLING_BUFFERED
+#define PACKET_BUNDLING PACKET_BUNDLING_DISABLED
 // Extra tunable for PACKET_BUNDLING_BUFFERED (10000us = 10ms timeout, 100hz target)
 #define PACKET_BUNDLING_BUFFER_SIZE_MICROS 10000
 

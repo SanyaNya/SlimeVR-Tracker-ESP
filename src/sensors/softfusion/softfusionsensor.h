@@ -86,7 +86,7 @@ class SoftFusionSensor : public Sensor {
 
 	void sendData() final {
 		Sensor::sendData();
-		sendTempIfNeeded();
+		//sendTempIfNeeded();
 	}
 
 	void sendTempIfNeeded() {

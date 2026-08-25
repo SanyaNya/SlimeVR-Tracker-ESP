@@ -686,7 +686,7 @@ void Connection::update() {
 	m_LastPacketTimestamp = millis();
 	switch (static_cast<ReceivePacketType>(m_Packet[3])) {
 		case ReceivePacketType::HeartBeat:
-			sendHeartbeat();
+			//sendHeartbeat();
 			break;
 
 		case ReceivePacketType::Vibrate:
@@ -703,7 +703,7 @@ void Connection::update() {
 			break;
 
 		case ReceivePacketType::PingPong:
-			returnLastPacket(len);
+			//returnLastPacket(len);
 			break;
 
 		case ReceivePacketType::SensorInfo: {

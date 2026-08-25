@@ -152,11 +152,11 @@ void WiFiNetwork::upkeep() {
 			return;
 		}
 
-		if (millis() - lastRssiSample >= 2000) {
+		/*if (millis() - lastRssiSample >= 2000) {
 			lastRssiSample = millis();
 			uint8_t signalStrength = WiFi.RSSI();
 			networkConnection.sendSignalStrength(signalStrength);
-		}
+		}*/
 		return;
 	}
 
