@@ -29,7 +29,6 @@
 #include <optional>
 
 #include "../configuration/SensorConfig.h"
-#include "featureflags.h"
 #include "globals.h"
 #include "packets.h"
 #include "quat.h"
@@ -92,9 +91,6 @@ public:
 	// PACKET_TEMPERATURE 20
 	void sendTemperature(uint8_t sensorId, float temperature);
 
-	// PACKET_FEATURE_FLAGS 22
-	void sendFeatureFlags();
-
 	// PACKET_FLEX_DATA 26
 	void sendFlexData(uint8_t sensorId, float flexLevel);
 
@@ -131,14 +127,11 @@ public:
 	);
 #endif
 
-	const ServerFeatures& getServerFeatureFlags() { return m_ServerFeatures; }
-
 	bool beginBundle();
 	bool endBundle();
 
 private:
 	void updateSensorState(std::vector<std::unique_ptr<::Sensor>>& sensors);
-	void maybeRequestFeatureFlags();
 	bool isSensorStateUpdated(int i, std::unique_ptr<::Sensor>& sensor);
 
 	bool beginPacket();
@@ -220,10 +213,6 @@ private:
 		= {};
 	bool m_AckedSensorCalibration[MAX_SENSORS_COUNT] = {false};
 	unsigned long m_LastSensorInfoPacketTimestamp = 0;
-
-	uint8_t m_FeatureFlagsRequestAttempts = 0;
-	unsigned long m_FeatureFlagsRequestTimestamp = millis();
-	ServerFeatures m_ServerFeatures{};
 
 	bool m_IsBundle = false;
 	uint16_t m_BundlePacketPosition = 0;

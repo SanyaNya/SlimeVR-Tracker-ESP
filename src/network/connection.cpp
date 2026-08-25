@@ -90,7 +90,6 @@ bool Connection::endPacket() {
 }
 
 bool Connection::beginBundle() {
-	MUST_TRANSFER_BOOL(m_ServerFeatures.has(ServerFeatures::PROTOCOL_BUNDLE_SUPPORT));
 	MUST_TRANSFER_BOOL(m_Connected);
 	MUST_TRANSFER_BOOL(!m_IsBundle);
 	MUST_TRANSFER_BOOL(beginPacket());
@@ -324,14 +323,6 @@ void Connection::sendTemperature(uint8_t sensorId, float temperature) {
 	));
 }
 
-// PACKET_FEATURE_FLAGS 22
-void Connection::sendFeatureFlags() {
-	MUST(m_Connected);
-	sendPacketCallback(SendPacketType::FeatureFlags, [&]() {
-		return write(FirmwareFeatures::flags.data(), FirmwareFeatures::flags.size());
-	});
-}
-
 // PACKET_ACKNOWLEDGE_CONFIG_CHANGE 24
 
 void Connection::sendAcknowledgeConfigChange(
@@ -483,20 +474,6 @@ void Connection::updateSensorState(std::vector<std::unique_ptr<Sensor>>& sensors
 	}
 }
 
-void Connection::maybeRequestFeatureFlags() {
-	if (m_ServerFeatures.isAvailable() || m_FeatureFlagsRequestAttempts >= 15) {
-		return;
-	}
-
-	if (millis() - m_FeatureFlagsRequestTimestamp < 500) {
-		return;
-	}
-
-	sendFeatureFlags();
-	m_FeatureFlagsRequestTimestamp = millis();
-	m_FeatureFlagsRequestAttempts++;
-}
-
 bool Connection::isSensorStateUpdated(int i, std::unique_ptr<Sensor>& sensor) {
 	return (m_AckedSensorState[i] != sensor->getSensorState()
 			|| m_AckedSensorCalibration[i] != sensor->hasCompletedRestCalibration()
@@ -538,9 +515,6 @@ void Connection::searchForServer() {
 			m_ServerPort = m_UDP.remotePort();
 			m_LastPacketTimestamp = millis();
 			m_Connected = true;
-
-			m_FeatureFlagsRequestAttempts = 0;
-			m_ServerFeatures = ServerFeatures{};
 
 			statusManager.setStatus(SlimeVR::Status::SERVER_CONNECTING, false);
 			ledManager.off();
@@ -603,7 +577,6 @@ void Connection::update() {
 	auto& sensors = sensorManager.getSensors();
 
 	updateSensorState(sensors);
-	maybeRequestFeatureFlags();
 
 	if (m_LastPacketTimestamp + TIMEOUT < millis()) {
 		statusManager.setStatus(SlimeVR::Status::SERVER_CONNECTING, true);
@@ -700,29 +673,6 @@ void Connection::update() {
 
 			break;
 		}
-		case ReceivePacketType::FeatureFlags: {
-			// Packet type (4) + Packet number (8) + flags (len - 12)
-			if (len < 13) {
-				m_Logger.warn("Invalid feature flags packet: too short");
-				break;
-			}
-
-			bool hadFlags = m_ServerFeatures.isAvailable();
-
-			uint32_t flagsLength = len - 12;
-			m_ServerFeatures = ServerFeatures::from(&m_Packet[12], flagsLength);
-
-			if (!hadFlags) {
-#if PACKET_BUNDLING != PACKET_BUNDLING_DISABLED
-				if (m_ServerFeatures.has(ServerFeatures::PROTOCOL_BUNDLE_SUPPORT)) {
-					m_Logger.debug("Server supports packet bundling");
-				}
-#endif
-			}
-
-			break;
-		}
-
 		case ReceivePacketType::SetConfigFlag: {
 			// Packet type (4) + Packet number (8) + sensor_id(1) + flag_id (2) + state
 			// (1)
