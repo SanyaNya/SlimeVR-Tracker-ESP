@@ -23,27 +23,28 @@
 #include "manager.h"
 
 #include "GlobalVars.h"
+#include <ESP8266WiFi.h>
 
 namespace SlimeVR::Network {
 
-void Manager::setup() { wifiNetwork.setUp(); }
+void Manager::setup()
+{
+    WiFi.persistent(false);
+    WiFi.mode(WIFI_STA);
+    WiFi.setOutputPower(20.5);
+    WiFi.setPhyMode(WIFI_PHY_MODE_11N);
+    WiFi.hostname("SlimeVR FBT Tracker");
 
-void Manager::update() {
-	wifiNetwork.upkeep();
+	WiFi.begin(WIFI_CREDS_SSID, WIFI_CREDS_PASSWD);
+    while(WiFi.status() != WL_CONNECTED) delay(500);
 
-	auto wasConnected = m_IsConnected;
+    WiFi.setSleepMode(WIFI_NONE_SLEEP);
 
-	m_IsConnected = wifiNetwork.isConnected();
+	networkConnection.reset();
+}
 
-	if (!m_IsConnected) {
-		return;
-	}
-
-	if (!wasConnected) {
-		// WiFi was reconnected, rediscover the server and reconnect
-		networkConnection.reset();
-	}
-
+void Manager::update()
+{
 	networkConnection.update();
 }
 

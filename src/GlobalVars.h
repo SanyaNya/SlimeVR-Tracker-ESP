@@ -28,8 +28,6 @@
 #include "configuration/Configuration.h"
 #include "network/connection.h"
 #include "network/manager.h"
-#include "network/wifihandler.h"
-#include "network/wifiprovisioning.h"
 #include "sensors/SensorManager.h"
 #include "status/LEDManager.h"
 #include "status/StatusManager.h"
@@ -42,5 +40,3 @@ extern SlimeVR::Sensors::SensorManager sensorManager;
 extern SlimeVR::Network::Manager networkManager;
 extern SlimeVR::Network::Connection networkConnection;
 extern BatteryMonitor battery;
-extern SlimeVR::WiFiNetwork wifiNetwork;
-extern SlimeVR::WifiProvisioning wifiProvisioning;

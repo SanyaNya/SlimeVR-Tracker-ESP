@@ -33,7 +33,6 @@
 #include "packets.h"
 #include "quat.h"
 #include "sensors/sensor.h"
-#include "wifihandler.h"
 
 namespace SlimeVR::Network {
 

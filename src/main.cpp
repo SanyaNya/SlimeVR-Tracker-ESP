@@ -42,8 +42,6 @@ SlimeVR::Status::StatusManager statusManager;
 SlimeVR::Configuration::Configuration configuration;
 SlimeVR::Network::Manager networkManager;
 SlimeVR::Network::Connection networkConnection;
-SlimeVR::WiFiNetwork wifiNetwork;
-SlimeVR::WifiProvisioning wifiProvisioning;
 
 #if DEBUG_MEASURE_SENSOR_TIME_TAKEN
 SlimeVR::Debugging::TimeTakenMeasurer sensorMeasurer{"Sensors"};
@@ -104,6 +102,10 @@ void setup() {
 	ledManager.setup();
 	configuration.setup();
 
+	logger.info("Connecting to WiFi...");
+	networkManager.setup();
+	logger.info("WiFi connected!");
+
 	SerialCommands::setUp();
 	// Make sure the bus isn't stuck when resetting ESP without powering it down
 	// Fixes I2C issues for certain IMUs. Previously this feature was enabled for
@@ -139,7 +141,6 @@ void setup() {
 
 	sensorManager.setup();
 
-	networkManager.setup();
 	OTA::otaSetup(otaPassword);
 	battery.Setup();
 

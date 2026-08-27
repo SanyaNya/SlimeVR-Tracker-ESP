@@ -28,6 +28,7 @@
 #include "GlobalVars.h"
 #include "logging/Logger.h"
 #include "packets.h"
+#include <ESP8266WiFi.h>
 
 #define TIMEOUT 3000UL
 
