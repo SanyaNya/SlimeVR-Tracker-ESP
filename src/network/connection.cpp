@@ -342,11 +342,15 @@ void Connection::sendAcknowledgeConfigChange(
 
 void Connection::sendTrackerDiscovery() {
 	MUST(!m_Connected);
+	m_PacketNumber = 0;
 	MUST(sendPacketCallback(
 		SendPacketType::Handshake,
 		[&]() {
 			uint8_t mac[6];
 			WiFi.macAddress(mac);
+
+			char str[13] = "Hey OVR =D 5";
+			MUST_TRANSFER_BOOL(sendBytes(reinterpret_cast<uint8_t*>(str), 12));
 
 			// MAC address string
 			MUST_TRANSFER_BOOL(sendBytes(mac, 6));
@@ -567,148 +571,8 @@ void Connection::reset() {
 	m_ServerHost = IPAddress(255, 255, 255, 255);
 
 	statusManager.setStatus(SlimeVR::Status::SERVER_CONNECTING, true);
-}
 
-void Connection::update() {
-	if (!m_Connected) {
-		searchForServer();
-		return;
-	}
-
-	auto& sensors = sensorManager.getSensors();
-
-	updateSensorState(sensors);
-
-	if (m_LastPacketTimestamp + TIMEOUT < millis()) {
-		statusManager.setStatus(SlimeVR::Status::SERVER_CONNECTING, true);
-
-		m_Connected = false;
-		std::fill(
-			m_AckedSensorState,
-			m_AckedSensorState + MAX_SENSORS_COUNT,
-			SensorStatus::SENSOR_OFFLINE
-		);
-		std::fill(
-			m_AckedSensorCalibration,
-			m_AckedSensorCalibration + MAX_SENSORS_COUNT,
-			false
-		);
-		m_Logger.warn("Connection to server timed out");
-
-		// Reset server address to broadcast if disconnected
-		m_ServerHost = IPAddress(255, 255, 255, 255);
-
-		return;
-	}
-
-	int packetSize = m_UDP.parsePacket();
-	if (!packetSize) {
-		return;
-	}
-
-	int len = m_UDP.read(m_Packet, sizeof(m_Packet));
-
-#ifdef DEBUG_NETWORK
-	m_Logger.trace(
-		"Received %d bytes from %s, port %d",
-		packetSize,
-		m_UDP.remoteIP().toString().c_str(),
-		m_UDP.remotePort()
-	);
-	m_Logger.traceArray("UDP packet contents: ", m_Packet, len);
-#else
-	(void)packetSize;
-#endif
-
-	if (static_cast<ReceivePacketType>(m_Packet[3]) == ReceivePacketType::Handshake) {
-		m_Logger.warn("Handshake received again, ignoring");
-		return;
-	}
-
-	m_LastPacketTimestamp = millis();
-	switch (static_cast<ReceivePacketType>(m_Packet[3])) {
-		case ReceivePacketType::HeartBeat:
-			//sendHeartbeat();
-			break;
-
-		case ReceivePacketType::Vibrate:
-			break;
-
-		case ReceivePacketType::Handshake:
-			// handled above
-			break;
-
-		case ReceivePacketType::Command:
-			break;
-
-		case ReceivePacketType::Config:
-			break;
-
-		case ReceivePacketType::PingPong:
-			//returnLastPacket(len);
-			break;
-
-		case ReceivePacketType::SensorInfo: {
-			if (len < 6) {
-				m_Logger.warn("Wrong sensor info packet");
-				break;
-			}
-
-			SensorInfoPacket sensorInfoPacket;
-			memcpy(&sensorInfoPacket, m_Packet + 4, sizeof(sensorInfoPacket));
-
-			for (int i = 0; i < (int)sensors.size(); i++) {
-				if (sensorInfoPacket.sensorId == sensors[i]->getSensorId()) {
-					m_AckedSensorState[i] = sensorInfoPacket.sensorState;
-					if (len < 12) {
-						m_AckedSensorCalibration[i]
-							= sensors[i]->hasCompletedRestCalibration();
-						m_AckedSensorConfigData[i] = sensors[i]->getSensorConfigData();
-						break;
-					}
-					m_AckedSensorCalibration[i]
-						= sensorInfoPacket.hasCompletedRestCalibration;
-					break;
-				}
-			}
-
-			break;
-		}
-		case ReceivePacketType::SetConfigFlag: {
-			// Packet type (4) + Packet number (8) + sensor_id(1) + flag_id (2) + state
-			// (1)
-			if (len < 16) {
-				m_Logger.warn("Invalid sensor config flag packet: too short");
-				break;
-			}
-
-			SetConfigFlagPacket setConfigFlagPacket;
-			memcpy(&setConfigFlagPacket, m_Packet + 12, sizeof(SetConfigFlagPacket));
-
-			uint8_t sensorId = setConfigFlagPacket.sensorId;
-			SensorToggles flag = setConfigFlagPacket.flag;
-			bool newState = setConfigFlagPacket.newState;
-			if (sensorId == UINT8_MAX) {
-				for (auto& sensor : sensors) {
-					sensor->setFlag(flag, newState);
-				}
-			} else {
-				auto& sensors = sensorManager.getSensors();
-
-				if (sensorId >= sensors.size()) {
-					m_Logger.warn("Invalid sensor config flag packet: invalid sensor id"
-					);
-					break;
-				}
-
-				auto& sensor = sensors[sensorId];
-				sensor->setFlag(flag, newState);
-			}
-			sendAcknowledgeConfigChange(sensorId, flag);
-			configuration.save();
-			break;
-		}
-	}
+	while(!m_Connected) searchForServer();
 }
 
 }  // namespace SlimeVR::Network

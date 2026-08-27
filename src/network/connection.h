@@ -57,7 +57,6 @@ public:
 	}
 
 	void searchForServer();
-	void update();
 	void reset();
 	bool isConnected() const { return m_Connected; }
 

@@ -156,7 +156,6 @@ void other_work()
 	delay(2);
 	SerialCommands::update();
 	OTA::otaUpdate();
-	networkManager.update();
 	battery.Loop();
 	ledManager.update();
 	I2CSCAN::update();

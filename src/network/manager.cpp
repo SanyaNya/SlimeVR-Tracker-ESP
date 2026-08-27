@@ -43,9 +43,4 @@ void Manager::setup()
 	networkConnection.reset();
 }
 
-void Manager::update()
-{
-	networkConnection.update();
-}
-
 }  // namespace SlimeVR::Network

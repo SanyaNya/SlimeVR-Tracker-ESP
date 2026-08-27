@@ -31,7 +31,6 @@ namespace SlimeVR::Network {
 class Manager {
 public:
 	void setup();
-	void update();
 
 private:
 	bool m_IsConnected = false;
