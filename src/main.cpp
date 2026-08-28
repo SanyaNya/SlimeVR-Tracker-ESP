@@ -50,7 +50,6 @@ SlimeVR::Debugging::TimeTakenMeasurer sensorMeasurer{"Sensors"};
 int sensorToCalibrate = -1;
 bool blinking = false;
 unsigned long blinkStart = 0;
-unsigned long loopTime = 0;
 unsigned long lastStatePrint = 0;
 bool secondImuActive = false;
 BatteryMonitor battery;
@@ -141,32 +140,12 @@ void setup() {
 
 	sensorManager.setup();
 
-	OTA::otaSetup(otaPassword);
-	battery.Setup();
-
 	statusManager.setStatus(SlimeVR::Status::LOADING, false);
 
 	sensorManager.postSetup();
-
-	loopTime = micros();
-}
-
-void other_work()
-{
-	delay(2);
-	SerialCommands::update();
-	OTA::otaUpdate();
-	battery.Loop();
-	ledManager.update();
-	I2CSCAN::update();
 }
 
 void loop() {
-#if DEBUG_MEASURE_SENSOR_TIME_TAKEN
-	sensorMeasurer.before();
-#endif
-	sensorManager.update(other_work);
-#if DEBUG_MEASURE_SENSOR_TIME_TAKEN
-	sensorMeasurer.after();
-#endif
+	sensorManager.update();
+	yield();
 }

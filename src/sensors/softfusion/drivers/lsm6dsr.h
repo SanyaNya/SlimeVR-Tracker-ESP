@@ -76,23 +76,41 @@ struct LSM6DSR : LSM6DSOutputHandler {
 		struct Ctrl3C {
 			static constexpr uint8_t reg = 0x12;
 			static constexpr uint8_t valueSwReset = 1;
-			static constexpr uint8_t value = (1 << 6) | (1 << 2);  // BDU = 1, IF_INC =
-																   // 1
-		};
-		struct FifoCtrl3BDR {
-			static constexpr uint8_t reg = 0x09;
-			static constexpr uint8_t value
-				= 0b01010101;  // Gyroscope batched into FIFO at 208Hz, Accel at 208Hz
-		};
-		struct FifoCtrl4Mode {
-			static constexpr uint8_t reg = 0x0a;
-			static constexpr uint8_t value = (0b110110);  // continuous mode,
-														  // temperature at 52Hz
+			static constexpr uint8_t value = (1 << 2);  // IF_INC = 1
 		};
 
-		static constexpr uint8_t FifoStatus = 0x3a;
-		static constexpr uint8_t FifoData = 0x78;
+		struct Status
+		{
+			static constexpr uint8_t reg = 0x1E;
+			static constexpr uint8_t GyrAccMask = 0b011;
+			static constexpr uint8_t TempMask = 0b100;
+		};
+
+		struct TempGyrAcc
+		{
+			static constexpr uint8_t reg = 0x20;
+			struct Data
+			{
+				int16_t temp;
+				int16_t gyr[3];
+				int16_t acc[3];
+			};
+			static_assert(sizeof(Data) == 14);
+		};
+
+		struct GyrAcc
+		{
+			static constexpr uint8_t reg = 0x22;
+			struct Data
+			{
+				int16_t gyr[3];
+				int16_t acc[3];
+			};
+			static_assert(sizeof(Data) == 12);
+		};
 	};
+
+
 
 	LSM6DSR(RegisterInterface& registerInterface, SlimeVR::Logging::Logger& logger)
 		: LSM6DSOutputHandler(registerInterface, logger) {}
@@ -104,24 +122,32 @@ struct LSM6DSR : LSM6DSOutputHandler {
 		m_RegisterInterface.writeReg(Regs::Ctrl1XL::reg, Regs::Ctrl1XL::value);
 		m_RegisterInterface.writeReg(Regs::Ctrl2GY::reg, Regs::Ctrl2GY::value);
 		m_RegisterInterface.writeReg(Regs::Ctrl3C::reg, Regs::Ctrl3C::value);
-		m_RegisterInterface.writeReg(
-			Regs::FifoCtrl3BDR::reg,
-			Regs::FifoCtrl3BDR::value
-		);
-		m_RegisterInterface.writeReg(
-			Regs::FifoCtrl4Mode::reg,
-			Regs::FifoCtrl4Mode::value
-		);
+
 		return true;
 	}
 
-	bool bulkRead(DriverCallbacks<int16_t>&& callbacks) {
-		return LSM6DSOutputHandler::template bulkRead<Regs>(
-			std::move(callbacks),
-			GyrTs,
-			AccTs,
-			TempTs
-		);
+	bool bulkRead(DriverCallbacks<int16_t>&& callbacks)
+	{
+		const uint8_t status = m_RegisterInterface.readReg(Regs::Status::reg);
+		const bool t = (status & Regs::Status::TempMask) == Regs::Status::TempMask;
+		const bool ga = (status & Regs::Status::GyrAccMask) == Regs::Status::GyrAccMask;
+		if(t && ga)
+		{
+			Regs::TempGyrAcc::Data data;
+			m_RegisterInterface.readBytes(Regs::TempGyrAcc::reg, sizeof(data), reinterpret_cast<uint8_t*>(&data));
+			callbacks.processGyroSample(data.gyr, GyrTs);
+			callbacks.processAccelSample(data.acc, AccTs);
+			callbacks.processTempSample(data.temp, TempTs);
+		}
+		else if(ga) [[likely]]
+		{
+			Regs::GyrAcc::Data data;
+			m_RegisterInterface.readBytes(Regs::GyrAcc::reg, sizeof(data), reinterpret_cast<uint8_t*>(&data));
+			callbacks.processGyroSample(data.gyr, GyrTs);
+			callbacks.processAccelSample(data.acc, AccTs);
+		}
+
+		return false;
 	}
 };
 
